@@ -1,0 +1,26 @@
+services:
+  bolt-diy:
+    image: ghcr.io/stackblitz-labs/bolt.diy:6a8449e
+    environment:
+      - NODE_ENV=production
+      - PORT=5173
+      - RUNNING_IN_DOCKER=true
+  auth-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.1
+    ports:
+      - "4180:4180"
+    environment:
+      # https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview
+      # https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/google
+      - OAUTH2_PROXY_HTTP_ADDRESS=http://0.0.0.0:4180
+      - OAUTH2_PROXY_UPSTREAMS=http://bolt-diy:5173
+      - OAUTH2_PROXY_PROVIDER=google
+      - OAUTH2_PROXY_EMAIL_DOMAINS=*
+      - OAUTH2_PROXY_CLIENT_ID=${OAUTH2_CLIENT_ID}
+      - OAUTH2_PROXY_CLIENT_SECRET=${OAUTH2_CLIENT_SECRET}
+      - OAUTH2_PROXY_COOKIE_REFRESH=1h
+      - OAUTH2_PROXY_COOKIE_SECURE=false
+      - OAUTH2_PROXY_COOKIE_SECRET=${OAUTH2_PROXY_COOKIE_SECRET}
+      - OAUTH2_PROXY_SESSION_COOKIE_MINIMAL=true
+      # NOTE: You need to add this REDIRECT_URL to the "Authorized redirect URIs" in the App client settings.
+      - OAUTH2_PROXY_REDIRECT_URL=http://localhost:4180/oauth2/callback
