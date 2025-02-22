@@ -128,6 +128,7 @@ export class BoltDiyStack extends TerraformStack {
 				location: props.region,
 				name: props.name,
 				ingress: "INGRESS_TRAFFIC_ALL", // Allow access from the internet
+				client: "cloud-console", // Set default value to minimize diff
 				template: {
 					serviceAccount: cloudRunServiceAccount.email,
 					scaling: {
@@ -136,30 +137,6 @@ export class BoltDiyStack extends TerraformStack {
 					},
 					containers: [
 						{
-							name: "bolt-diy-container",
-							image: `${props.region}-docker.pkg.dev/${props.project}/${repository.repositoryId}/bolt-diy:${props.boltDiyImageTag}`,
-							resources: {
-								limits: {
-									cpu: "1",
-									memory: "1Gi",
-								},
-							},
-							env: [
-								{
-									name: "NODE_ENV",
-									value: "production",
-								},
-								{
-									name: "PORT",
-									value: "5173",
-								},
-								{
-									name: "RUNNING_IN_DOCKER",
-									value: "true",
-								},
-							],
-						},
-						{
 							name: "oauth2-proxy-container",
 							image: `${props.region}-docker.pkg.dev/${props.project}/${repository.repositoryId}/oauth2-proxy:${props.proxyImageTag}`,
 							ports: {
@@ -167,7 +144,7 @@ export class BoltDiyStack extends TerraformStack {
 							},
 							resources: {
 								limits: {
-									cpu: "1",
+									cpu: "1000m",
 									memory: "512Mi",
 								},
 							},
@@ -226,6 +203,30 @@ export class BoltDiyStack extends TerraformStack {
 											version: "latest",
 										},
 									},
+								},
+							],
+						},
+						{
+							name: "bolt-diy-container",
+							image: `${props.region}-docker.pkg.dev/${props.project}/${repository.repositoryId}/bolt-diy:${props.boltDiyImageTag}`,
+							resources: {
+								limits: {
+									cpu: "1000m",
+									memory: "1Gi",
+								},
+							},
+							env: [
+								{
+									name: "NODE_ENV",
+									value: "production",
+								},
+								{
+									name: "PORT",
+									value: "5173",
+								},
+								{
+									name: "RUNNING_IN_DOCKER",
+									value: "true",
 								},
 							],
 						},
