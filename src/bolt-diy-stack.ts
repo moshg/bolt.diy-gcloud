@@ -6,7 +6,7 @@ import {
 	provider,
 	secretManagerSecret,
 	secretManagerSecretIamMember,
-	serviceAccount
+	serviceAccount,
 } from "@cdktf/provider-google";
 import { TerraformOutput, TerraformStack } from "cdktf";
 import type { Construct } from "constructs";
@@ -88,18 +88,26 @@ export class BoltDiyStack extends TerraformStack {
 		};
 
 		// Service Account
-		const cloudRunServiceAccount = new serviceAccount.ServiceAccount(this, "cloud-run-service-account", {
-			accountId: "bolt-diy",
-			displayName: "Bolt Diy Service Account",
-		});
+		const cloudRunServiceAccount = new serviceAccount.ServiceAccount(
+			this,
+			"cloud-run-service-account",
+			{
+				accountId: "bolt-diy",
+				displayName: "Bolt Diy Service Account",
+			},
+		);
 
 		// Secret Manager IAM
 		for (const [id, secret] of Object.entries(secrets)) {
-			new secretManagerSecretIamMember.SecretManagerSecretIamMember(this, `secret-accessor-${id}`, {
-				secretId: secret.secretId,
-				role: "roles/secretmanager.secretAccessor",
-				member: `serviceAccount:${cloudRunServiceAccount.email}`,
-			});
+			new secretManagerSecretIamMember.SecretManagerSecretIamMember(
+				this,
+				`secret-accessor-${id}`,
+				{
+					secretId: secret.secretId,
+					role: "roles/secretmanager.secretAccessor",
+					member: `serviceAccount:${cloudRunServiceAccount.email}`,
+				},
+			);
 		}
 
 		// Get project information
@@ -226,11 +234,15 @@ export class BoltDiyStack extends TerraformStack {
 			});
 
 			// IAM policy for unauthenticated access
-			new cloudRunV2ServiceIamMember.CloudRunV2ServiceIamMember(this, "allow-unauthenticated-invocations", {
-				name: service.name,
-				role: "roles/run.invoker",
-				member: "allUsers",
-			});
+			new cloudRunV2ServiceIamMember.CloudRunV2ServiceIamMember(
+				this,
+				"allow-unauthenticated-invocations",
+				{
+					name: service.name,
+					role: "roles/run.invoker",
+					member: "allUsers",
+				},
+			);
 		}
 	}
 }
