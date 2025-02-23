@@ -62,12 +62,6 @@ Set the secrets in the Secret Manager.
 - `oauth2-client-secret`
 - `oauth2-proxy-cookie-secret`
 
-Push the Docker image to the Artifact Registry.
-
-```bash
-npm run push-image
-```
-
 Set `NO_CLOUD_RUN` to `false` in the `.env` file and run the following command to deploy Cloud Run.
 
 ```bash

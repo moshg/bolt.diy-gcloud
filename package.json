@@ -10,8 +10,7 @@
 		"compile": "tsc --pretty",
 		"watch": "tsc -w",
 		"test": "jest",
-		"test:watch": "jest --watch",
-		"push-image": "export $(cat .env | xargs); ./scripts/push_image.sh"
+		"test:watch": "jest --watch"
 	},
 	"engines": {
 		"node": ">=18.0"

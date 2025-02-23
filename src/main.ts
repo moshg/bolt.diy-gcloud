@@ -11,7 +11,7 @@ new BoltDiyStack(app, "bolt-diy", {
 	project: env.PROJECT_ID,
 	region: env.REGION,
 	boltDiyImageTag: "6a8449e",
-	proxyImageTag: "v7.8.1",
+	oauth2ProxyImageTag: "v7.8.1",
 	noCloudRun: env.NO_CLOUD_RUN,
 });
 

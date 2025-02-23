@@ -21,7 +21,7 @@ interface BoltDiyStackProps {
 	project: string;
 	region: string;
 	boltDiyImageTag: string;
-	proxyImageTag: string;
+	oauth2ProxyImageTag: string;
 	noCloudRun: boolean;
 }
 
@@ -35,17 +35,44 @@ export class BoltDiyStack extends TerraformStack {
 		});
 
 		// Artifact Registry
-		const repository =
-			new artifactRegistryRepository.ArtifactRegistryRepository(
-				this,
-				"repository",
-				{
-					location: props.region,
-					repositoryId: props.name,
-					format: "Docker",
-					description: "bolt.diy repository",
+		const boltDiyRepository = new artifactRegistryRepository.ArtifactRegistryRepository(
+			this,
+			"bolt-diy-repository",
+			{
+				repositoryId: "bolt-diy",
+				description: "bolt.diy repository",
+				format: "docker",
+				mode: "REMOTE_REPOSITORY",
+				remoteRepositoryConfig: {
+					description: "GitHub Container Registry",
+					commonRepository: {
+						uri: "https://ghcr.io",
+					}
 				},
-			);
+				vulnerabilityScanningConfig: {
+					enablementConfig: "DISABLED"
+				}
+			},
+		);
+
+		const oauth2ProxyRepository = new artifactRegistryRepository.ArtifactRegistryRepository(
+			this,
+			"oauth2-proxy-repository",
+			{
+				repositoryId: "oauth2-proxy",
+				format: "docker",
+				mode: "REMOTE_REPOSITORY",
+				remoteRepositoryConfig: {
+					description: "Red Hat Quay",
+					commonRepository: {
+						uri: "https://quay.io",
+					},
+				},
+				vulnerabilityScanningConfig: {
+					enablementConfig: "DISABLED"
+				}
+			},
+		);
 
 		// Secret Manager
 		const clientIdSecret = new secretManagerSecret.SecretManagerSecret(
@@ -138,7 +165,7 @@ export class BoltDiyStack extends TerraformStack {
 					containers: [
 						{
 							name: "oauth2-proxy-container",
-							image: `${props.region}-docker.pkg.dev/${props.project}/${repository.repositoryId}/oauth2-proxy:${props.proxyImageTag}`,
+							image: `${props.region}-docker.pkg.dev/${props.project}/${oauth2ProxyRepository.repositoryId}/oauth2-proxy/oauth2-proxy:${props.oauth2ProxyImageTag}`,
 							ports: {
 								containerPort: 4180,
 							},
@@ -208,7 +235,7 @@ export class BoltDiyStack extends TerraformStack {
 						},
 						{
 							name: "bolt-diy-container",
-							image: `${props.region}-docker.pkg.dev/${props.project}/${repository.repositoryId}/bolt-diy:${props.boltDiyImageTag}`,
+							image: `${props.region}-docker.pkg.dev/${props.project}/${boltDiyRepository.repositoryId}/stackblitz-labs/bolt.diy:${props.boltDiyImageTag}`,
 							resources: {
 								limits: {
 									cpu: "1000m",
